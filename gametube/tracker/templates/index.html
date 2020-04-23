@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block main %}
+<main class="main">
+    <section class="main__search-box">
+        <form action="" class="search-box__form" method="POST">
+            {% csrf_token %}
+            <label for="username" class="form__label" hidden="true">Search</label>
+            <input type="text" class="form__search-input" name="username">
+            <select name="server">
+                <option value="EUNE">EUNE</option>
+                <option value="EUW">EUW</option>
+                <option value="NA">NA</option>
+                <option value="KR">KR</option>
+            </select>
+            <button type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </section>
+    <noscript>Please enable javascript</noscript>
+</main>
+{% endblock main %}
