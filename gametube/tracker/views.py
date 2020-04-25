@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse
 import requests
+from .forms import TrackerSearchForm
 from riotwatcher import LolWatcher, ApiError
 
 file = open("key.txt", "r")
 key = file.read()
 watcher = LolWatcher(key)
+
 
 def get_server(server):
     switch = {
@@ -14,19 +16,24 @@ def get_server(server):
     }
     return switch.get(server.upper(), "EUW")
 
-def search_view(request):
-    context = {
-        "title": "Search"
-    }
-    if request.method == "POST":
-        player = request.POST['username']
-        server = request.POST['server'].lower()
-        return redirect('player_detail', server, player)
 
+def search_view(request):
+    if request.method == "POST":
+        form = TrackerSearchForm(request.POST)
+        if form.is_valid():
+            player = form.cleaned_data.get('username')
+            server = form.cleaned_data.get('server').lower()
+            return redirect('player_detail', server, player)
+    else:
+        form = TrackerSearchForm()
+    context = {
+        "title": "Search",
+        "form": form
+    }
     return render(request, 'index.html', context)
 
+
 def player_view(request, username, server):
-    print(username)
     server = get_server(server)
     data = None
     try:
@@ -39,7 +46,7 @@ def player_view(request, username, server):
             print('this retry-after is handled by default by the RiotWatcher library')
             print('future requests wait until the retry-after time passes')
         elif err.response.status_code == 404:
-            print('Summoner with that ridiculous name not found.')
+            print('Summoner with that name not found.')
         else:
             raise
         return redirect("tracker_search")
