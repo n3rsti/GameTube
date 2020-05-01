@@ -1,16 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
 {% block extra_head %}
 <link rel="shortcut icon" href="http://ddragon.leagueoflegends.com/cdn/10.8.1/img/profileicon/{{icon}}.png"/>
 <title>{{ title }}</title>
+<style>
+    
+    .top_info::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: url('http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ highest_champ }}_0.jpg') no-repeat center;
+        background-size: cover;
+    }
+    .top_info__icon_div::before {
+        content: '';
+        position: absolute;
+        z-index: 2;
+        height: 120%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120%;
+        background: url('https://opgg-static.akamaized.net/images/borders2/{{tier|lower}}.png') no-repeat center;
+        background-size: cover;
+    }
+    
+</style>
 {% endblock extra_head %}
-<img src="http://ddragon.leagueoflegends.com/cdn/10.8.1/img/profileicon/{{icon}}.png" alt="">
-{{ name }}
-{{ level }}
-{{ rank }}
-{{ winrate }}
-<ul>
-{% for match in matches %}
-<li>
-{{ match.lane }}
-</li>
+{% block main %}
+<header class="top_info">
+    <div class="top_info__icon_div">
+        <img src="http://ddragon.leagueoflegends.com/cdn/10.8.1/img/profileicon/{{icon}}.png" alt="{{ name }} icon" class="top_info__icon">
+    </div>
+    
+    <section class="top_info__rank">
+        <h1 class="rank__nickname">{{ name }}</h1>
+        <h2 class="rank__level">Level <span class="level">{{ level }}</span></h2>
+    </section>
+    <section class="top_info__mastery">
+       
+    </section>
+    
+</header>
+<nav class="queue">
+    {% for type in queue %}
+    {% if forloop.first %}
+    <button class="queue__type active">{{ type }}</button>
+    {% else %}
+    <button class="queue__type">{{ type }}</button>
+    {% endif %}
+    {% endfor %}
+</nav>
+<main class="rank_stats">
+{% for queue, tier, rank, lp, win, loss, winrate in rankeds %}
+<article class="rank_section rank__{{ queue|lower|slice:4 }}" style="z-index:{{ forloop.counter }};">
+    <img src="{% static '' %}ranked/{{ tier|lower }}.png" alt="" class="rank_stats__img">
+    <section class="rank_section__data">
+        <p class="data__queue">Ranked {{ queue }}</p>
+        <h3 class="data__rank">{{ tier|lower|capfirst }} {{ rank }}</h3>
+        <p class="data__lp">{{ lp }} LP <span class="win_stats">| {{ win }}W {{ loss }}P</span></p>
+        <h4 class="data__winrate">{{ winrate }}% Win ratio</h4>
+    </section>
+</article>
 {% endfor %}
-</ul>
+</main>
+{% endblock main %}

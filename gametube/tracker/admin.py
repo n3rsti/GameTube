@@ -1,3 +1,5 @@
 from django.contrib import admin
+from.models import LolVersion, Champion
 
-# Register your models here.
+admin.site.register(LolVersion)
+admin.site.register(Champion)
