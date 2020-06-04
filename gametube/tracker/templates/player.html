@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% load trackertags %}
 {% block extra_head %}
-<link rel="shortcut icon" href="http://ddragon.leagueoflegends.com/cdn/10.8.1/img/profileicon/{{icon}}.png"/>
+<link rel="shortcut icon" href="https://ddragon.leagueoflegends.com/cdn/{{ patch }}/img/profileicon/{{icon}}.png"/>
 <title>{{ title }}</title>
 <style>
     
@@ -13,7 +14,7 @@
         top: 0;
         left: 0;
         width: 100%;
-        background: url('http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ highest_champ }}_0.jpg') no-repeat center;
+        background: url('https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ highest_champ }}_0.jpg') no-repeat center;
         background-size: cover;
     }
     .top_info__icon_div::before {
@@ -25,7 +26,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         width: 120%;
-        background: url('https://opgg-static.akamaized.net/images/borders2/{{tier|lower}}.png') no-repeat center;
+        background: url("{% static '' %}ranked/{{tier|lower}}.png") no-repeat center;
         background-size: cover;
     }
     
@@ -34,31 +35,29 @@
 {% block main %}
 <header class="top_info">
     <div class="top_info__icon_div">
-        <img src="http://ddragon.leagueoflegends.com/cdn/10.8.1/img/profileicon/{{icon}}.png" alt="{{ name }} icon" class="top_info__icon">
+        <img src="https://ddragon.leagueoflegends.com/cdn/{{ patch }}/img/profileicon/{{icon}}.png" alt="{{ name }} icon" class="top_info__icon">
     </div>
     
     <section class="top_info__rank">
         <h1 class="rank__nickname">{{ name }}</h1>
         <h2 class="rank__level">Level <span class="level">{{ level }}</span></h2>
     </section>
-    <section class="top_info__mastery">
-       
-    </section>
+    <section class="top_info__mastery"></section>
     
 </header>
 <nav class="queue">
     {% for type in queue %}
     {% if forloop.first %}
-    <button class="queue__type active">{{ type }}</button>
+    <button class="queue__type button_{{ type|lower|slice:4 }} active" name="{{ type|lower|slice:4 }}" onclick="showRankSection(this)">{{ type }}</button>
     {% else %}
-    <button class="queue__type">{{ type }}</button>
+    <button class="queue__type button_{{ type|lower|slice:4 }}" name="{{ type|lower|slice:4 }}" onclick="showRankSection(this)">{{ type }}</button>
     {% endif %}
     {% endfor %}
 </nav>
 <main class="rank_stats">
-{% for queue, tier, rank, lp, win, loss, winrate in rankeds %}
-<article class="rank_section rank__{{ queue|lower|slice:4 }}" style="z-index:{{ forloop.counter }};">
-    <img src="{% static '' %}ranked/{{ tier|lower }}.png" alt="" class="rank_stats__img">
+{% for queue, tier, rank, lp, win, loss, winrate, int_rank in rankeds %}
+<article class="rank_section rank__{{ queue|lower|slice:4 }}" style="z-index:{{ forloop.counter }}; {% if forloop.first %}position: static;{% endif %}">
+    <img src="{% static '' %}ranked/{{ tier|lower }}_{{int_rank}}.png" alt="" class="rank_stats__img">
     <section class="rank_section__data">
         <p class="data__queue">Ranked {{ queue }}</p>
         <h3 class="data__rank">{{ tier|lower|capfirst }} {{ rank }}</h3>
@@ -68,4 +67,30 @@
 </article>
 {% endfor %}
 </main>
+<section class="match_history">
+    {% for match, win in matches %}
+    <article class="match_history__match">
+    <section class="match__champion" style="border-left: 6px solid {% if win is False %}#EA2027; {% else %}#0EC953;{%endif%}">
+            <img class="champion__icon" src="http://ddragon.leagueoflegends.com/cdn/{{ patch }}/img/champion/{{ match.champion|get_champion }}.png" alt="{{ match.champion|get_champion }} icon">
+            <h3 class="champion__name">{{ match.champion|get_champion }}</h3>
+        </section>
+        
+    </article>
+    {% endfor %}
+</section>
+<script>
+    function showRankSection(button){
+        sections = document.querySelectorAll('.rank_section')
+        buttons = document.querySelectorAll('.queue__type')
+        for(let count = 0; count < sections.length; count++){
+            sections[count].style.zIndex = count + 1;
+            sections[count].style.position = 'absolute';
+            buttons[count].classList.remove('active');
+        }
+        document.querySelector(`.rank__${button.name}`).style.zIndex = sections.length + 1;
+        document.querySelector(`.rank__${button.name}`).style.position = 'static';
+        document.querySelector(`.button_${button.name}`).classList.add('active');
+
+    }
+</script>
 {% endblock main %}
